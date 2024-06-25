@@ -97,6 +97,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     uploadConfig,
     fakeUpload,
     groupUpload,
+    additFormFields,
     onUploadStart,
     onUploadFinish,
     //styling
@@ -244,6 +245,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     urlFromExtFile,
     localFiles
   );
+  console.log(additFormFields);
   /**
    * Uploads each file in the array of ExtFiles
    * First, sets all the files in preparing status and awaits `preparingTime` miliseconds.
@@ -347,13 +349,21 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
       const unifiedUpload = (
         method,
         url,
-        arrOfFiles
+        arrOfFiles,
+        additFormFields
       ): Promise<{ success: boolean; message: string; payload: object }> => {
         arrOfExtFilesInstances.forEach((el) => (el.uploadStatus = "uploading"));
         handleFilesChange(sanitizeArrExtFile(arrOfExtFilesInstances), true);
+
         const formData = new FormData();
+
         for (let i = 0; i < arrOfFiles.length; i++) {
           formData.append("files", arrOfFiles[i].file);
+        }
+        if (additFormFields) {
+          Object.keys(additFormFields).forEach((key) => {
+            formData.append(key, additFormFields[key]);
+          });
         }
         return new Promise((resolve, reject) => {
           let xhr = new XMLHttpRequest();
@@ -382,7 +392,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
       };
       try {
         let respo: { success: boolean; message: string; payload: object } =
-          await unifiedUpload("POST", url, arrOfExtFilesInstances);
+          await unifiedUpload("POST", url, arrOfExtFilesInstances, additFormFields);
         arrOfExtFilesInstances.forEach((el) => (el.uploadStatus = "success"));
         arrOfExtFilesInstances.forEach(
           (el) => (el.uploadMessage = respo.message)

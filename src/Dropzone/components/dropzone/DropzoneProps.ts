@@ -104,6 +104,10 @@ export interface DropzoneFullProps extends OverridableComponentProps {
    */
   groupUpload?: boolean;
   /**
+   * When groupUpload prop is used, you can pass additional form fields through this prop to be appended to the final request.
+   */
+  additFormFields?: { [key: string]: string }
+  /**
    * Callback fired when the upload process starts.
    */
   onUploadStart?: (uploadAbleFiles: ExtFile[]) => void;
