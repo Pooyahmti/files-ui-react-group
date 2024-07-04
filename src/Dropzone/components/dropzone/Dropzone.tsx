@@ -94,6 +94,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     onClean,
     autoClean,
     //uploading
+    triggerUpload,
     uploadConfig,
     fakeUpload,
     groupUpload,
@@ -246,6 +247,11 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     localFiles
   );
   console.log(additFormFields);
+  React.useEffect(() => {
+    if(triggerUpload) {
+      uploadfiles(localFiles);
+    }
+  },[triggerUpload]);
   /**
    * Uploads each file in the array of ExtFiles
    * First, sets all the files in preparing status and awaits `preparingTime` miliseconds.
