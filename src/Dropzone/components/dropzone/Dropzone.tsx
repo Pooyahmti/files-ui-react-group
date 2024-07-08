@@ -350,7 +350,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
 
     //return;
     let serverResponses: Array<ExtFile> = [];
-
+    let serverResponse
     if (groupUpload) {
       const unifiedUpload = (
         method,
@@ -383,7 +383,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
               console.log(xhr.response);
-              console.log(typeof xhr.response);
+              serverResponse = xhr.response
               resolve(xhr.response);
             } else {
               reject(xhr.response);
@@ -500,7 +500,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     setLocalFiles(sanitizeArrExtFile(arrOfExtFilesInstances));
 
     // upload group finished :D
-    onUploadFinish?.(serverResponses);
+    onUploadFinish?.( groupUpload ? serverResponse : serverResponses);
 
     const finishUploadMessenger: FunctionLabel =
       DropzoneLocalizer.uploadFinished as FunctionLabel;
