@@ -246,12 +246,11 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     urlFromExtFile,
     localFiles
   );
-  console.log(additFormFields);
   React.useEffect(() => {
-    if(triggerUpload) {
+    if (triggerUpload) {
       uploadfiles(localFiles);
     }
-  },[triggerUpload]);
+  }, [triggerUpload]);
   /**
    * Uploads each file in the array of ExtFiles
    * First, sets all the files in preparing status and awaits `preparingTime` miliseconds.
@@ -350,7 +349,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
 
     //return;
     let serverResponses: Array<ExtFile> = [];
-    let serverResponse
+    let serverResponse;
     if (groupUpload) {
       const unifiedUpload = (
         method,
@@ -382,8 +381,7 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
           xhr.responseType = "json";
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
-              console.log(xhr.response);
-              serverResponse = xhr.response
+              serverResponse = xhr.response;
               resolve(xhr.response);
             } else {
               reject(xhr.response);
@@ -393,22 +391,33 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
             reject(err);
           };
           xhr.open(method, url);
+          if (headers && headers.Authorization) {
+            xhr.setRequestHeader("Authorization", `${headers.Authorization}`);
+          }
           xhr.send(formData);
         });
       };
       try {
         let respo: { success: boolean; message: string; payload: object } =
-          await unifiedUpload("POST", url, arrOfExtFilesInstances, additFormFields);
-        arrOfExtFilesInstances.forEach((el) => (el.uploadStatus = "success"));
-        arrOfExtFilesInstances.forEach(
-          (el) => (el.uploadMessage = respo.message)
-        );
+          await unifiedUpload(
+            "POST",
+            url,
+            arrOfExtFilesInstances,
+            additFormFields
+          );
+        if (respo.success) {
+          arrOfExtFilesInstances.forEach((el) => (el.uploadStatus = "success"));
+          arrOfExtFilesInstances.forEach(
+            (el) => (el.uploadMessage = respo.message)
+          );
+        } else {
+          throw new Error(respo.message);
+        }
       } catch (err) {
         arrOfExtFilesInstances.forEach((el) => (el.uploadStatus = "error"));
         arrOfExtFilesInstances.forEach(
           (el) => (el.uploadMessage = err.message)
         );
-        console.log(err);
       }
       handleFilesChange(sanitizeArrExtFile(arrOfExtFilesInstances), true);
     } else {
@@ -499,18 +508,17 @@ const Dropzone: React.FC<DropzoneProps> = (props: DropzoneProps) => {
     }
     setLocalFiles(sanitizeArrExtFile(arrOfExtFilesInstances));
 
-    // upload group finished :D
-    onUploadFinish?.( groupUpload ? serverResponse : serverResponses);
-
     const finishUploadMessenger: FunctionLabel =
       DropzoneLocalizer.uploadFinished as FunctionLabel;
     if (uploadResultMessage)
       setLocalMessage(
         finishUploadMessenger(missingUpload - totalRejected, totalRejected)
       );
-    setTimeout(() => {
-      setIsUploading(false);
-    }, 2000);
+
+    setIsUploading(false);
+
+    // upload group finished :D
+    onUploadFinish?.(groupUpload ? serverResponse : serverResponses);
   };
 
   const handleAbortUpload = () => {
